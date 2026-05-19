@@ -184,7 +184,7 @@ export default async function BuyerDashboardPage() {
             </div>
           )}
 
-          {/* ✅ LATEST CAPABILITIES WIDGET (DỮ LIỆU THẬT) */}
+          {/* LATEST CAPABILITIES WIDGET (DỮ LIỆU THẬT) */}
           <div className="bg-white border border-gray-200 rounded-sm p-6 shadow-sm">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-bold text-japan-indigo">Latest Capabilities Added</h2>
@@ -196,7 +196,6 @@ export default async function BuyerDashboardPage() {
                 latestProducts.map((product) => (
                   <div key={product.id} className="group rounded-sm overflow-hidden border border-gray-100 flex items-center p-3 gap-4 hover:shadow-md transition cursor-pointer relative bg-gray-50/50">
                     <div className="w-16 h-16 bg-gray-200 flex-shrink-0 flex items-center justify-center text-gray-400">
-                       {/* Nếu sau này có ảnh thì thay thẻ img vào đây */}
                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -219,7 +218,7 @@ export default async function BuyerDashboardPage() {
             </div>
           </div>
           
-          {/* ✅ ACTIVE QUOTATIONS WIDGET (DỮ LIỆU THẬT) */}
+          {/* ACTIVE QUOTATIONS WIDGET (DỮ LIỆU THẬT - ĐÃ VÁ LỖI TYPESCRIPT) */}
           <div className="bg-white border border-gray-200 rounded-sm p-6 shadow-sm relative overflow-hidden">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-bold text-japan-indigo">Active RFQs & Quotations</h2>
@@ -246,7 +245,11 @@ export default async function BuyerDashboardPage() {
             ) : activeRfqs && activeRfqs.length > 0 ? (
               <div className="flex flex-col gap-3">
                 {activeRfqs.map((rfq) => {
-                  const productName = rfq.rfq_items?.[0]?.products?.name || 'Multiple Items';
+                  // ✅ GIẢI PHÁP VÁ LỖI: Ép kiểu an toàn để gỡ lỗi biên dịch Supabase Join
+                  const item = rfq.rfq_items?.[0];
+                  const productsData = item?.products as any;
+                  const productName = productsData?.name || productsData?.[0]?.name || 'Multiple Items';
+                  
                   return (
                     <Link key={rfq.id} href={`/rfq?id=${rfq.id}`} className="flex items-center justify-between p-4 border border-gray-100 rounded-sm hover:border-japan-indigo hover:shadow-sm transition group bg-gray-50/30">
                       <div>
@@ -295,7 +298,6 @@ export default async function BuyerDashboardPage() {
                 </div>
               )}
 
-              {/* Dữ liệu Market Thật */}
               <div className={!isTier2 ? 'opacity-40 blur-[2px] select-none' : ''}>
                 <div className="mb-4">
                   <p className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider flex justify-between">
@@ -337,7 +339,6 @@ export default async function BuyerDashboardPage() {
             <p className="text-sm opacity-90 mb-4 leading-relaxed relative z-10">
               Once verified, you will be assigned a bilingual Technical Sales Representative to handle negotiations and export logistics.
             </p>
-            {/* ✅ NÚT ĐÃ ĐƯỢC CHUYỂN THÀNH LINK VÀO TRANG MESSAGES */}
             {isTier2 ? (
               <Link 
                 href="/dashboard/messages" 
