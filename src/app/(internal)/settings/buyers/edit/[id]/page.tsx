@@ -7,8 +7,17 @@ import { updateBuyerEntity } from '@/app/(internal)/settings/users/actions';
 export const dynamic = 'force-dynamic';
 
 export default async function EditBuyerPage({ params }: { params: Promise<{ id: string }> }) {
-  const { role } = await requireAuth(['admin', 'manager']); 
-  if (role !== 'admin' && role !== 'manager') redirect('/settings/buyers');
+  // ✅ SỬA LỖI TYPESCRIPT: Dùng định dạng chuỗi thay vì mảng
+  const { profile, hasError } = await requireAuth('/settings/buyers', 'Edit Buyer Profile');
+  if (hasError) {
+    redirect('/portal');
+  }
+
+  // Chặn quyền
+  const role = profile?.role;
+  if (role !== 'admin' && role !== 'manager') {
+    redirect('/settings/buyers');
+  }
   
   const resolvedParams = await params;
   const buyerId = resolvedParams.id;
