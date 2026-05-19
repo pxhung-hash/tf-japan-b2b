@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js';
 import Link from 'next/link';
+import { redirect } from 'next/navigation'; // ✅ Đã import thêm redirect
 import { requireAuth } from '@/lib/auth-guard'; 
 // Gọi Component Bảng tương tác (có checkbox, dropdown)
 import ProductMasterTable from './ProductMasterTable'; 
@@ -10,9 +11,20 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function MasterDataPage() {
-  // 1. BẢO VỆ TRANG & LẤY ROLE
-  const { role } = await requireAuth(['admin', 'manager', 'sales']);
+  // 1. ✅ BẢO VỆ TRANG & LẤY ROLE (Đã sửa cú pháp TypeScript)
+  const { profile, hasError } = await requireAuth('/master-data', 'Master Data');
   
+  if (hasError) {
+    redirect('/portal');
+  }
+
+  const role = profile?.role;
+  
+  // Chặn nếu không có quyền (Chỉ admin, manager, sales mới được vào)
+  if (role !== 'admin' && role !== 'manager' && role !== 'sales') {
+    redirect('/dashboard');
+  }
+
   // Xác định xem có phải là Sếp không
   const isManager = role === 'admin' || role === 'manager';
 
