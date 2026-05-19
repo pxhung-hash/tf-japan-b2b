@@ -11,7 +11,6 @@ export default async function BuyerRFQDashboard({
   const params = await searchParams;
   const currentRfqId = params?.id || null;
 
-  // Đã sửa thành chuỗi: '/rfq'
   const { user, hasError } = await requireAuth('/rfq', 'My RFQs');
 
   // CHẶN TRUY CẬP NẾU CHƯA CÓ QUYỀN
@@ -55,7 +54,10 @@ export default async function BuyerRFQDashboard({
           <div className="flex-1 overflow-y-auto">
             {rfqs?.map((rfq) => {
               const item = rfq.rfq_items?.[0]; 
-              const productName = item?.products?.name || 'Multiple Items';
+              
+              // ✅ GIẢI PHÁP VÁ LỖI BIÊN DỊCH TYPESCRIPT Ở ĐÂY:
+              const productsData = item?.products as any;
+              const productName = productsData?.name || productsData?.[0]?.name || 'Multiple Items';
               
               return (
                 <Link 
