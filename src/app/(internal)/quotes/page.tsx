@@ -1,11 +1,23 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth-guard';
 import Link from 'next/link';
+import { redirect } from 'next/navigation'; // ✅ Thêm import redirect
 
 export const dynamic = 'force-dynamic';
 
 export default async function QuotesListPage() {
-  await requireAuth(['admin', 'manager', 'sales']);
+  // ✅ ĐÃ SỬA LỖI TYPESCRIPT
+  const { profile, hasError } = await requireAuth('/quotes', 'Quotes Management');
+  if (hasError) {
+    redirect('/portal');
+  }
+
+  // ✅ KẾT HỢP KIỂM TRA QUYỀN
+  const role = profile?.role;
+  if (role !== 'admin' && role !== 'manager' && role !== 'sales') {
+    redirect('/dashboard');
+  }
+
   const supabase = await createClient();
 
   // ✅ ĐÃ CẬP NHẬT: Kéo thêm thông tin seller_entities (Công ty phát hành báo giá)
