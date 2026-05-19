@@ -2,12 +2,23 @@ import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseAdmin } from '@supabase/supabase-js';
 import { requireAuth } from '@/lib/auth-guard';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation'; // ✅ Import thêm redirect
 
 export const dynamic = 'force-dynamic';
 
 export default async function ViewProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const { role } = await requireAuth(['admin', 'manager', 'sales']);
+  // ✅ ĐÃ SỬA: Gọi requireAuth với tham số chuỗi theo đúng định dạng TypeScript
+  const { profile, hasError } = await requireAuth('/master-data', 'View Product');
+  
+  if (hasError) {
+    redirect('/portal');
+  }
+
+  // ✅ KẾT HỢP KIỂM TRA QUYỀN
+  const role = profile?.role;
+  if (role !== 'admin' && role !== 'manager' && role !== 'sales') {
+    redirect('/dashboard');
+  }
   const isManager = role === 'admin' || role === 'manager';
   
   const resolvedParams = await params;
