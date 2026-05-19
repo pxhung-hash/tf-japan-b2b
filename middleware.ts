@@ -17,12 +17,16 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value, options))
+          // ✅ ĐÃ SỬA: Xóa bỏ chữ 'options' ở dòng request này
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          
           response = NextResponse.next({
             request: {
               headers: request.headers,
             },
           })
+          
+          // Dòng response giữ nguyên 3 tham số
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           )
