@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth-guard';
-import { addProductAsStaff, deleteProductAsStaff } from './actions';
+// ✅ ĐÃ SỬA: Trỏ đường dẫn import về đúng file actions dùng chung của sales-desk
+import { addProductAsStaff, deleteProductAsStaff } from '@/app/(internal)/sales-desk/actions';
 
 export default async function StaffProductManagementPage() {
   // 1. Bảo vệ trang: Chỉ Staff (Admin, Sales, Manager) mới được vào
@@ -16,14 +17,15 @@ export default async function StaffProductManagementPage() {
 
   // 3. Lấy danh sách các nhà cung cấp (Để đổ vào Dropdown)
   const { data: suppliers } = await supabase
-    .from('suppliers')
-    .select('id, company_name, contact_person')
+    .from('profiles') // Lấy từ bảng profiles với role là supplier (bạn có thể điều chỉnh lại nếu dùng bảng suppliers riêng)
+    .select('id, company_name, full_name')
+    .eq('role', 'supplier')
     .order('company_name', { ascending: true });
 
   // 4. Helper: Cập nhật lại cách lấy tên
   const getSupplierName = (id: string) => {
     const sp = suppliers?.find(s => s.id === id);
-    return sp?.company_name || 'Unknown Supplier';
+    return sp?.company_name || sp?.full_name || 'Unknown Supplier';
   };
 
   return (
@@ -49,9 +51,10 @@ export default async function StaffProductManagementPage() {
             <select 
               name="supplierId" 
               required 
+              defaultValue=""
               className="w-full px-4 py-2.5 border border-gray-300 rounded focus:border-japan-indigo focus:ring-1 focus:ring-japan-indigo outline-none transition text-sm appearance-none bg-gray-50 font-semibold"
             >
-              <option value="" disabled selected>-- Select a Partner --</option>
+              <option value="" disabled>-- Select a Partner --</option>
               {suppliers?.map(s => (
                 <option key={s.id} value={s.id}>{s.company_name || s.full_name}</option>
               ))}
