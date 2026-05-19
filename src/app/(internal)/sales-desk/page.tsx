@@ -63,38 +63,45 @@ export default async function SalesDeskPage({
           </div>
           
           <div className="flex-1 overflow-y-auto">
-            {rfqs?.map((rfq) => (
-              <Link 
-                href={`/sales-desk?rfq=${rfq.id}`} 
-                key={rfq.id}
-                className={`block p-4 border-b border-gray-100 hover:bg-blue-50 transition cursor-pointer group ${
-                  currentRfqId === rfq.id ? 'bg-blue-50 border-l-4 border-l-japan-indigo' : 'border-l-4 border-l-transparent'
-                }`}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <span className="font-bold text-japan-ink group-hover:text-japan-indigo transition truncate pr-2">
-                    {rfq.profiles?.company_name || 'Unknown Company'}
-                  </span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest whitespace-nowrap ${
-                    rfq.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' : 
-                    rfq.status === 'quoting' ? 'bg-blue-100 text-blue-700 border border-blue-200' : 
-                    'bg-green-100 text-green-700 border border-green-200'
-                  }`}>
-                    {rfq.status}
-                  </span>
-                </div>
-                
-                <div className="text-xs text-gray-500 flex justify-between items-center">
-                  <span className="flex items-center gap-1 font-medium">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    {rfq.profiles?.country || 'N/A'}
-                  </span>
-                  <span className="font-mono text-[10px] text-gray-400">
-                    {new Date(rfq.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-              </Link>
-            ))}
+            {rfqs?.map((rfq) => {
+              // ✅ BÍ QUYẾT XỬ LÝ LỖI TYPESCRIPT CỦA SUPABASE: Ép kiểu an toàn
+              const profileData = rfq.profiles as any;
+              const companyName = profileData?.company_name || profileData?.[0]?.company_name || 'Unknown Company';
+              const country = profileData?.country || profileData?.[0]?.country || 'N/A';
+
+              return (
+                <Link 
+                  href={`/sales-desk?rfq=${rfq.id}`} 
+                  key={rfq.id}
+                  className={`block p-4 border-b border-gray-100 hover:bg-blue-50 transition cursor-pointer group ${
+                    currentRfqId === rfq.id ? 'bg-blue-50 border-l-4 border-l-japan-indigo' : 'border-l-4 border-l-transparent'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-bold text-japan-ink group-hover:text-japan-indigo transition truncate pr-2">
+                      {companyName}
+                    </span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest whitespace-nowrap ${
+                      rfq.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' : 
+                      rfq.status === 'quoting' ? 'bg-blue-100 text-blue-700 border border-blue-200' : 
+                      'bg-green-100 text-green-700 border border-green-200'
+                    }`}>
+                      {rfq.status}
+                    </span>
+                  </div>
+                  
+                  <div className="text-xs text-gray-500 flex justify-between items-center">
+                    <span className="flex items-center gap-1 font-medium">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                      {country}
+                    </span>
+                    <span className="font-mono text-[10px] text-gray-400">
+                      {new Date(rfq.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
             
             {(!rfqs || rfqs.length === 0) && (
               <div className="p-8 flex flex-col items-center justify-center text-center h-full">
