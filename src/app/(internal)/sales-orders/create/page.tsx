@@ -1,13 +1,22 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth-guard';
 import Link from 'next/link';
+import { redirect } from 'next/navigation'; // ✅ Đã thêm import
 // ✅ ĐÃ MỞ KHÓA: Import Form tạo SO thủ công
 import SOBuilderForm from '@/components/forms/SOBuilderForm'; 
 
 export const dynamic = 'force-dynamic';
 
 export default async function CreateSalesOrderPage() {
-  await requireAuth(['admin', 'manager', 'sales']);
+  // ✅ SỬA LỖI YÊU CẦU QUYỀN TRUY CẬP
+  const { profile, hasError } = await requireAuth('/sales-orders/create', 'Create Sales Order');
+  if (hasError) redirect('/portal');
+  
+  const role = profile?.role;
+  if (role !== 'admin' && role !== 'manager' && role !== 'sales') {
+    redirect('/dashboard');
+  }
+
   const supabase = await createClient();
 
   // 1. Kéo Khách hàng
