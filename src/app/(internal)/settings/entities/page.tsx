@@ -1,11 +1,21 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth-guard';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation'; // ✅ Đã thêm import redirect
 
 export const dynamic = 'force-dynamic';
 
 export default async function SellerEntitiesPage() {
-  await requireAuth(['admin', 'manager']);
+  // ✅ ĐÃ SỬA LỖI TYPESCRIPT
+  const { profile, hasError } = await requireAuth('/settings/entities', 'Manage Entities');
+  if (hasError) redirect('/portal');
+
+  // Kiểm tra quyền
+  const role = profile?.role;
+  if (role !== 'admin' && role !== 'manager') {
+    redirect('/dashboard');
+  }
+
   const supabase = await createClient();
 
   // Kéo danh sách pháp nhân
