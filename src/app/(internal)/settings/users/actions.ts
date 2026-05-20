@@ -90,7 +90,13 @@ export async function createStaffAccount(formData: FormData) {
   // ✅ ĐÃ SỬA: Bỏ first_name, last_name, cập nhật trực tiếp vào full_name
   await adminSupabase
     .from('profiles')
-    .update({ full_name: fullName, role: role as any, approval_status: 'approved' })
+    await adminSupabase
+    .from('profiles')
+    .update({ 
+      full_name: fullName, 
+      role: role as any, 
+      approval_status: 'approved' as any 
+    })
     .eq('id', authUser.user.id);
 
   revalidatePath('/settings/staff');
