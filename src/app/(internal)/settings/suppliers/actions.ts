@@ -1,7 +1,17 @@
 // Thêm vào cuối file: src/app/(internal)/settings/users/actions.ts
+import { createClient as createSupabaseAdmin } from '@supabase/supabase-js';
+import { revalidatePath } from 'next/cache';
 
+// ============================================================================
+// SERVER ACTION: TẠO MỚI SUPPLIER ACCOUNT (Bởi Admin)
+// ============================================================================
 export async function createSupplierAccount(formData: FormData) {
-  const adminSupabase = createAdminClient();
+  // Khởi tạo Admin Client chuẩn xác để xuyên qua RLS
+  const adminSupabase = createSupabaseAdmin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const companyName = formData.get('companyName') as string;
@@ -28,5 +38,6 @@ export async function createSupplierAccount(formData: FormData) {
     })
     .eq('id', authUser.user.id);
 
+  // 3. Làm mới lại trang danh sách Supplier
   revalidatePath('/settings/suppliers');
 }
