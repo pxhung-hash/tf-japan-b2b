@@ -4,17 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-
-// ============================================================================
-// HÀM HELPER: Tách Tên Đầy Đủ thành First Name và Last Name để lưu vào DB
-// (Vì full_name trong Database của bạn là cột GENERATED ALWAYS)
-// ============================================================================
-function splitName(fullName: string) {
-  const parts = fullName.trim().split(' ');
-  const first_name = parts[0] || '';
-  const last_name = parts.slice(1).join(' ') || '';
-  return { first_name, last_name };
-}
+import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'; // Import dùng cho hàm tạo Supplier
 
 // ============================================================================
 // Kéo quyền Admin cơ bản (Dùng chung cho các hành động bảo mật)
@@ -49,10 +39,12 @@ export async function editUser(formData: FormData) {
     throw new Error("You cannot demote your own admin account.");
   }
 
-  const { first_name, last_name } = splitName(fullName);
-
+  // ✅ ĐÃ SỬA: Bỏ first_name, last_name, cập nhật trực tiếp vào full_name
   await supabase.from('profiles').update({ 
-    first_name, last_name, company_name: companyName, role: role, approval_status: approvalStatus
+    full_name: fullName, 
+    company_name: companyName, 
+    role: role, 
+    approval_status: approvalStatus
   }).eq('id', userId)
 
   revalidatePath('/settings/users')
@@ -95,11 +87,10 @@ export async function createStaffAccount(formData: FormData) {
 
   if (authError) throw new Error(authError.message);
 
-  const { first_name, last_name } = splitName(fullName);
-
+  // ✅ ĐÃ SỬA: Bỏ first_name, last_name, cập nhật trực tiếp vào full_name
   await adminSupabase
     .from('profiles')
-    .update({ first_name, last_name, role: role as any, approval_status: 'approved' })
+    .update({ full_name: fullName, role: role as any, approval_status: 'approved' })
     .eq('id', authUser.user.id);
 
   revalidatePath('/settings/staff');
@@ -128,7 +119,12 @@ export async function updateBuyerTier(buyerId: string, tier: string) {
 export async function createSupplierAccount(formData: FormData) {
   try {
     const { adminUser } = await verifyAdminAccess();
-    const adminSupabase = createAdminClient();
+    
+    // ✅ ĐÃ SỬA: Khởi tạo Admin Client chuẩn xác để xuyên qua RLS
+    const adminSupabase = createSupabaseAdmin(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
     
     const companyName = formData.get('companyName') as string;
     const contactName = formData.get('contactName') as string;
@@ -150,10 +146,9 @@ export async function createSupplierAccount(formData: FormData) {
 
     if (authError) throw new Error("Lỗi tạo Auth User: " + authError.message);
 
-    const { first_name, last_name } = splitName(contactName);
-
+    // ✅ ĐÃ SỬA: Cập nhật trực tiếp full_name
     await adminSupabase.from('profiles').update({ 
-      first_name, last_name, role: 'supplier', approval_status: 'approved', supplier_id: newEntity.id 
+      full_name: contactName, role: 'supplier', approval_status: 'approved', supplier_id: newEntity.id 
     }).eq('id', authUser.user.id);
 
     revalidatePath('/settings/suppliers');
@@ -193,10 +188,9 @@ export async function createBuyerAccount(formData: FormData) {
 
     if (authError) throw new Error("Lỗi tạo Auth User: " + authError.message);
 
-    const { first_name, last_name } = splitName(contactName);
-
+    // ✅ ĐÃ SỬA: Cập nhật trực tiếp full_name
     const { error: profileError } = await adminSupabase.from('profiles').update({ 
-      first_name, last_name, role: 'buyer', approval_status: 'approved', buyer_id: newEntity.id 
+      full_name: contactName, role: 'buyer', approval_status: 'approved', buyer_id: newEntity.id 
     }).eq('id', authUser.user.id);
 
     if (profileError) throw new Error("Lỗi liên kết hồ sơ: " + profileError.message);
@@ -243,11 +237,9 @@ export async function updateSupplierEntity(formData: FormData) {
   revalidatePath('/settings/suppliers');
   revalidatePath(`/settings/suppliers/${id}`);
   
-  // ✅ ĐÃ SỬA: File đã import redirect nên lệnh này sẽ chạy mượt mà
   redirect(`/settings/suppliers/${id}`); 
 }
 
-// ============================================================================
 // ============================================================================
 // 8. THÊM TÀI KHOẢN NHÂN VIÊN VÀO MỘT PHÁP NHÂN ĐÃ TỒN TẠI (KHÔNG ĐÁNH SẬP TRANG)
 // ============================================================================
@@ -268,11 +260,9 @@ export async function addStaffToEntity(formData: FormData) {
 
     if (authError) throw new Error(authError.message);
 
-    const { first_name, last_name } = splitName(fullName);
-
+    // ✅ ĐÃ SỬA: Cập nhật trực tiếp full_name
     const profileData: any = {
-      first_name, 
-      last_name,
+      full_name: fullName,
       company_name: companyName,
       role: entityType,
       approval_status: 'approved'
@@ -293,19 +283,17 @@ export async function addStaffToEntity(formData: FormData) {
 
     revalidatePath(`/settings/${entityType}s/${entityId}`);
 
-    // ✅ NẾU THÀNH CÔNG: Trả về trạng thái success
     return { success: true };
 
   } catch (error: any) {
     console.error("LỖI THÊM NHÂN VIÊN SUB-ACCOUNT:", error.message);
     
-    // ✅ NẾU CÓ LỖI: Dịch lỗi sang tiếng Việt và trả về cho Client Component hiển thị
     let errorMsg = error.message;
     if (errorMsg.includes('already been registered')) {
       errorMsg = 'Email này đã tồn tại trong hệ thống. Vui lòng sử dụng email khác!';
     }
     
-    return { error: errorMsg }; // Tuyệt đối không dùng throw ở đây nữa
+    return { error: errorMsg };
   }
 }
 
