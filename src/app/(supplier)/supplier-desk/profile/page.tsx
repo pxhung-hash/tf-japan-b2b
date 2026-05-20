@@ -1,13 +1,20 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth-guard';
+import { redirect } from 'next/navigation'; // ✅ Bổ sung import redirect
 import SupplierProfileForm from './SupplierProfileForm';
 
 export default async function SupplierProfilePage() {
-  // 1. Bảo vệ trang
-  const { profile } = await requireAuth('/supplier-desk/profile');
+  // ✅ 1. SỬA LẠI: Thêm tên trang, lấy hasError và chặn truy cập nếu không có quyền
+  const { profile, hasError } = await requireAuth('/supplier-desk/profile', 'Company Profile');
+  
+  if (hasError || !profile) {
+    redirect('/portal');
+  }
+
   const supabase = await createClient();
 
-  // ĐÃ SỬA LỖI Ở ĐÂY: Dùng 'created_by' thay vì 'id'
+  // ĐÃ SỬA LỖI Ở ĐÂY: Dùng 'created_by' thay vì 'id'. 
+  // Lúc này TypeScript đã hoàn toàn yên tâm profile.id luôn tồn tại.
   const { data: supplierData } = await supabase
     .from('suppliers')
     .select('*')
@@ -29,7 +36,7 @@ export default async function SupplierProfilePage() {
           <div className="absolute -bottom-10 left-8">
             <div className="w-24 h-24 bg-white rounded-full border-4 border-white flex items-center justify-center shadow-md overflow-hidden">
               <span className="text-3xl font-black text-teal-700">
-                {supplierData?.company_name?.charAt(0) || profile?.company_name?.charAt(0) || 'S'}
+                {supplierData?.company_name?.charAt(0) || profile.company_name?.charAt(0) || 'S'}
               </span>
             </div>
           </div>
@@ -39,7 +46,7 @@ export default async function SupplierProfilePage() {
           {/* 3. Truyền dữ liệu vào Client Component. JSON.stringify giúp reset Form khi có data mới */}
           <SupplierProfileForm 
             initialData={supplierData || { company_name: profile.company_name, country: profile.country }} 
-            email={profile?.email || ''}
+            email={profile.email || ''}
             key={JSON.stringify(supplierData)} 
           />
         </div>

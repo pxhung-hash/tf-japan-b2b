@@ -8,8 +8,15 @@ import { updateSupplierEntity } from '@/app/(internal)/settings/users/actions';
 export const dynamic = 'force-dynamic';
 
 export default async function EditSupplierPage({ params }: { params: Promise<{ id: string }> }) {
-  const { role } = await requireAuth(['admin', 'manager']); // Chỉ Sếp mới được sửa pháp nhân
-  if (role !== 'admin' && role !== 'manager') redirect('/settings/suppliers');
+  // ✅ SỬA LỖI TYPESCRIPT: Thay mảng bằng chuỗi theo đúng format của auth-guard
+  const { profile, hasError } = await requireAuth('/settings/suppliers', 'Edit Supplier');
+  if (hasError) redirect('/portal');
+
+  // Chỉ Sếp (Admin/Manager) mới được sửa pháp nhân
+  const role = profile?.role;
+  if (role !== 'admin' && role !== 'manager') {
+    redirect('/settings/suppliers');
+  }
   
   const resolvedParams = await params;
   const supplierId = resolvedParams.id;

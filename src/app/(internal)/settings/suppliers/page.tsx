@@ -2,11 +2,21 @@ import { createClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth-guard';
 import { createSupplierAccount } from '@/app/(internal)/settings/users/actions'; 
 import Link from 'next/link';
+import { redirect } from 'next/navigation'; // ✅ Bổ sung hàm đá văng user
 
 export const dynamic = 'force-dynamic';
 
 export default async function SupplierManagementPage() {
-  await requireAuth('/settings/suppliers', 'Supplier Management');
+  // ✅ SỬA LẠI: Lấy kết quả kiểm tra và chặn quyền tuyệt đối
+  const { profile, hasError } = await requireAuth('/settings/suppliers', 'Supplier Management');
+  if (hasError) redirect('/portal');
+
+  // Chỉ Admin và Manager mới được quản lý Supplier
+  const role = profile?.role;
+  if (role !== 'admin' && role !== 'manager') {
+    redirect('/dashboard');
+  }
+
   const supabase = await createClient();
 
   // KÉO DANH SÁCH PHÁP NHÂN (Kèm theo danh sách tài khoản nhân viên trực thuộc)

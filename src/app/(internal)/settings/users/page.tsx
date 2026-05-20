@@ -2,13 +2,22 @@ import { createClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth-guard';
 import { editUser, deleteUser } from './actions';
 import Link from 'next/link';
+import { redirect } from 'next/navigation'; // ✅ Bổ sung import redirect
 
 export default async function UserManagementPage({
   searchParams,
 }: {
   searchParams: Promise<{ edit?: string }>
 }) {
-  await requireAuth('/settings/users', 'User Role Management');
+  // ✅ SỬA LẠI: Lấy kết quả từ requireAuth và thực hiện chặn quyền
+  const { profile, hasError } = await requireAuth('/settings/users', 'User Role Management');
+  if (hasError) redirect('/portal');
+
+  // Chỉ Admin và Manager mới được quản lý User
+  const role = profile?.role;
+  if (role !== 'admin' && role !== 'manager') {
+    redirect('/dashboard');
+  }
 
   const supabase = await createClient();
   const params = await searchParams;

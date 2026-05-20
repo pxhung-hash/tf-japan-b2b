@@ -2,9 +2,17 @@ import { createClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth-guard';
 import { addRoutePermission, deleteRoutePermission, saveAllPermissions } from './actions';
 import { Constants } from '@/types/database.types'; // Đảm bảo đường dẫn này khớp với cấu trúc dự án của bạn
+import { redirect } from 'next/navigation'; // ✅ Bổ sung import
 
 export default async function PermissionSettingsPage() {
-  await requireAuth('/settings/permissions', 'Role Permissions Setup');
+  // ✅ SỬA LẠI: Lấy kết quả chặn quyền
+  const { profile, hasError } = await requireAuth('/settings/permissions', 'Role Permissions Setup');
+  if (hasError) redirect('/portal');
+
+  // Trang này cực kỳ nhạy cảm, chỉ Admin mới được phép chỉnh sửa Permission!
+  if (profile?.role !== 'admin') {
+    redirect('/dashboard');
+  }
 
   const supabase = await createClient();
   

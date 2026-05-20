@@ -1,9 +1,19 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth-guard';
 import { createStaffAccount } from '../users/actions';
+import { redirect } from 'next/navigation'; // ✅ Bổ sung hàm redirect
 
 export default async function StaffManagementPage() {
-  await requireAuth('/settings/staff', 'Internal Staff Management');
+  // ✅ SỬA LẠI: Lấy kết quả và chặn quyền tuyệt đối
+  const { profile, hasError } = await requireAuth('/settings/staff', 'Internal Staff Management');
+  if (hasError) redirect('/portal');
+
+  // Chỉ Sếp (Admin/Manager) mới được quản lý nhân sự
+  const role = profile?.role;
+  if (role !== 'admin' && role !== 'manager') {
+    redirect('/dashboard');
+  }
+
   const supabase = await createClient();
 
   // Chỉ lấy những người có role nội bộ (không phải buyer)
@@ -20,7 +30,8 @@ export default async function StaffManagementPage() {
       {/* FORM KHAI BÁO NHÂN VIÊN MỚI */}
       <div className="bg-white border border-gray-200 rounded-xl p-6 mb-10 shadow-sm">
         <h2 className="font-bold mb-4">Register New Staff Member</h2>
-        <form action={createStaffAccount} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        {/* ✅ SỬA LẠI GIAO DIỆN: Đổi thành md:grid-cols-5 để vừa vặn 5 trường dữ liệu trên 1 hàng */}
+        <form action={createStaffAccount} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <input name="fullName" placeholder="Full Name" required className="px-4 py-2 border rounded text-sm" />
           <input name="email" type="email" placeholder="Email" required className="px-4 py-2 border rounded text-sm" />
           <input name="password" type="password" placeholder="Temp Password" required className="px-4 py-2 border rounded text-sm" />

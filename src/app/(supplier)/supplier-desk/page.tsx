@@ -4,13 +4,19 @@ import { requireAuth } from '@/lib/auth-guard';
 import Link from 'next/link';
 import ExcelActions from '@/components/ui/ExcelActions';
 import { deleteProduct } from './actions';
+import { redirect } from 'next/navigation'; // ✅ Bổ sung import redirect
 
 // ✅ ÉP NEXT.JS KHÔNG ĐƯỢC CACHE, LUÔN LẤY DỮ LIỆU MỚI NHẤT
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function SupplierInventoryPage() {
-  const { profile } = await requireAuth('/supplier-desk');
+  // ✅ SỬA LẠI: Lấy hasError, thêm tham số thứ 2 và chặn quyền truy cập
+  const { profile, hasError } = await requireAuth('/supplier-desk', 'My Inventory');
+  if (hasError || !profile) {
+    redirect('/portal');
+  }
+
   const supabase = await createClient();
 
   // ✅ DÙNG ADMIN CLIENT ĐỂ XUYÊN QUA LỚP BẢO MẬT RLS CỦA SUPABASE
@@ -20,10 +26,11 @@ export default async function SupplierInventoryPage() {
   );
 
   // 1. Lấy supplier_id của user này (Dùng Admin Client)
+  // TypeScript giờ đã yên tâm profile.id luôn tồn tại nhờ lệnh redirect ở trên
   const { data: supplier } = await supabaseAdmin
     .from('suppliers')
     .select('id')
-    .eq('created_by', profile.id)
+    .eq('created_by', profile.id) 
     .single();
 
   // 2. Kéo danh sách sản phẩm (Dùng Admin Client để đảm bảo không bị chặn)
