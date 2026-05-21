@@ -3,8 +3,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
-// BUYER GỬI TIN NHẮN CHO STAFF
-export async function sendBuyerDirectMessage(receiverId: string, content: string) {
+// ✅ ĐÃ ĐỔI TÊN: sendBuyerDirectMessage -> sendMessage
+export async function sendMessage(receiverId: string, content: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: 'Unauthorized' };
@@ -37,8 +37,8 @@ export async function sendBuyerDirectMessage(receiverId: string, content: string
   }
 }
 
-// BUYER ĐÁNH DẤU ĐÃ ĐỌC TIN NHẮN
-export async function markBuyerChatAsRead() {
+// ✅ ĐÃ ĐỔI TÊN: markBuyerChatAsRead -> markChatAsRead
+export async function markChatAsRead() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false };
