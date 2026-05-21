@@ -205,8 +205,8 @@ export default async function BuyerLayout({ children }: { children: React.ReactN
       <footer className="bg-white border-t border-gray-200 py-8 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-japan-crimson rounded-sm flex items-center justify-center">
-              <span className="text-white font-black text-[10px]">ZNX</span>
+            <div className="w-24 h-6 bg-japan-crimson rounded-sm flex items-center justify-center">
+              <span className="text-white font-black text-[10px]">ZENX</span>
             </div>
             <span className="text-japan-indigo text-sm font-black">ZENIX Japan TRADING</span>
           </div>
