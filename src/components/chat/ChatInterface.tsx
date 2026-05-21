@@ -62,7 +62,7 @@ export default function ChatInterface({
 
     setIsSending(true);
     // ✅ ĐÃ SỬA: Gọi hàm sendMessage ở đây
-    const res = await sendMessage(currentUserId, repId, contentToSend);
+    const res = await sendMessage(repId, contentToSend);
     
     if (!res.success) {
       alert("Lỗi gửi tin: " + res.error);
