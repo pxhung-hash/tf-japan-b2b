@@ -28,8 +28,8 @@ function LoginContent() {
         
         <div className="relative z-10 p-16 max-w-lg">
           <Link href="/" className="flex items-center gap-3 mb-12 hover:opacity-80 transition">
-            <div className="w-12 h-12 bg-japan-crimson rounded-sm flex items-center justify-center shadow-lg">
-              <span className="text-white font-black text-2xl">TF</span>
+            <div className="w-24 h-12 bg-japan-crimson rounded-sm flex items-center justify-center shadow-lg">
+              <span className="text-white font-black text-2xl">ZENIX</span>
             </div>
             <span className="text-3xl font-black tracking-tighter text-white">JAPAN</span>
           </Link>
@@ -64,8 +64,8 @@ function LoginContent() {
           
           {/* Logo hiện trên mobile */}
           <Link href="/" className="flex lg:hidden items-center gap-3 mb-10">
-            <div className="w-10 h-10 bg-japan-crimson rounded-sm flex items-center justify-center shadow-inner">
-              <span className="text-white font-black text-xl">TF</span>
+            <div className="w-24 h-12 bg-japan-crimson rounded-sm flex items-center justify-center shadow-inner">
+              <span className="text-white font-black text-2xl">ZENIX</span>
             </div>
             <span className="text-2xl font-black tracking-tighter text-japan-indigo">JAPAN</span>
           </Link>
