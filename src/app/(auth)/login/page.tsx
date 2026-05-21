@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { login, signup } from './actions';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
-export default function LoginPage() {
+// BƯỚC 1: Đổi tên hàm thành LoginContent (không export default nữa)
+function LoginContent() {
   // Quản lý trạng thái xem người dùng đang ở tab Login hay Register
   const [isLogin, setIsLogin] = useState(true);
   const [isPending, setIsPending] = useState(false);
@@ -213,5 +214,18 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// BƯỚC 2: Tạo hàm xuất khẩu mặc định bọc Suspense bên ngoài
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 text-japan-indigo font-bold">
+        Loading portal...
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }
