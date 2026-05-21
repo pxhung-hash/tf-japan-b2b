@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { sendBuyerDirectMessage, markBuyerChatAsRead } from './actions';
+// ✅ ĐÃ SỬA: Import đúng tên hàm mới từ actions.ts
+import { sendMessage, markChatAsRead } from './actions';
 import { useRouter } from 'next/navigation';
 
 export default function BuyerChatInterface({ 
@@ -16,7 +17,9 @@ export default function BuyerChatInterface({
   const router = useRouter();
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
-  useEffect(() => { markBuyerChatAsRead(); }, []); // Tự tắt chấm đỏ
+  
+  // ✅ ĐÃ SỬA: Gọi đúng tên hàm markChatAsRead
+  useEffect(() => { markChatAsRead(); }, []); 
 
   const handleSend = async () => {
     if (!newMessage.trim() || isSending) return;
@@ -26,7 +29,8 @@ export default function BuyerChatInterface({
     setMessages(prev => [...prev, { id: Math.random().toString(), sender_id: currentUserId, content: contentToSend, created_at: new Date().toISOString() }]);
     
     setIsSending(true);
-    await sendBuyerDirectMessage(staffId, contentToSend);
+    // ✅ ĐÃ SỬA: Gọi đúng tên hàm sendMessage
+    await sendMessage(staffId, contentToSend);
     router.refresh(); 
     setIsSending(false);
   };
