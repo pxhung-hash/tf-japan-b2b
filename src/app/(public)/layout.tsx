@@ -43,8 +43,8 @@ export default async function PublicLayout({ children }: { children: React.React
           <div className="flex justify-between h-20 items-center">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-japan-crimson rounded-sm flex items-center justify-center shadow-inner">
-                <span className="text-white font-black text-xl">TF</span>
+              <div className="w-20 h-10 bg-japan-crimson rounded-sm flex items-center justify-center shadow-inner">
+                <span className="text-white font-black text-xl">ZENIX</span>
               </div>
               <Link href="/" className="text-2xl font-black tracking-tighter text-japan-indigo">
                 JAPAN
