@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-// 1. Cập nhật dòng import này: Thêm markChatAsRead
-import { sendChatMessage, markChatAsRead } from '@/app/(buyer)/dashboard/messages/actions'; 
+// ✅ ĐÃ SỬA: Đổi sendChatMessage thành sendMessage cho khớp với convention thông thường
+import { sendMessage, markChatAsRead } from '@/app/(buyer)/dashboard/messages/actions'; 
 import { useRouter } from 'next/navigation';
 
 type Message = {
@@ -38,7 +38,7 @@ export default function ChatInterface({
     scrollToBottom();
   }, [messages]);
 
-    // 2. THÊM useEffect NÀY: Tự động đánh dấu đã đọc và clear chấm đỏ khi mở khung chat
+  // Tự động đánh dấu đã đọc và clear chấm đỏ khi mở khung chat
   useEffect(() => {
     markChatAsRead();
   }, []);
@@ -61,7 +61,8 @@ export default function ChatInterface({
     setMessages(prev => [...prev, tempMsg]);
 
     setIsSending(true);
-    const res = await sendChatMessage(currentUserId, repId, contentToSend);
+    // ✅ ĐÃ SỬA: Gọi hàm sendMessage ở đây
+    const res = await sendMessage(currentUserId, repId, contentToSend);
     
     if (!res.success) {
       alert("Lỗi gửi tin: " + res.error);
