@@ -58,8 +58,8 @@ export default async function InternalLayout({ children }: { children: React.Rea
         {/* Logo Area */}
         <div className="h-16 flex items-center px-6 border-b border-white/10 bg-black/10">
           <div className="flex items-center gap-3">
-             <div className="w-8 h-8 bg-japan-crimson rounded-sm flex items-center justify-center shadow-inner">
-                <span className="text-white font-black text-sm">ZNX</span> 
+             <div className="w-24 h-12 bg-japan-crimson rounded-sm flex items-center justify-center shadow-inner">
+                <span className="text-white font-black text-2xl">ZENIX</span> 
              </div>
              <span className="text-lg font-black tracking-widest uppercase">Staff <span className="text-gray-400 font-normal">Portal</span></span>
           </div>

@@ -62,8 +62,8 @@ export default async function BuyerLayout({ children }: { children: React.ReactN
             
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-japan-crimson rounded-sm flex items-center justify-center shadow-inner">
-                <span className="text-white font-black text-xl">ZNX</span>
+              <div className="w-24 h-12 bg-japan-crimson rounded-sm flex items-center justify-center shadow-inner">
+                <span className="text-white font-black text-2xl">ZENIX</span>
               </div>
               <Link href="/dashboard" className="text-2xl font-black tracking-tighter text-japan-indigo flex items-baseline gap-2">
                 JAPAN <span className="text-sm font-bold text-gray-400 tracking-normal hidden sm:inline">Buyer Portal</span>
