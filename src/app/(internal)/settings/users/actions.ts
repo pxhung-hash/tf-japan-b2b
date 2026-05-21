@@ -107,9 +107,9 @@ export async function createStaffAccount(formData: FormData) {
 export async function updateBuyerTier(buyerId: string, tier: string) {
   const adminSupabase = createAdminClient();
   
-  // ✅ Bọc (adminSupabase as any) để bỏ qua lỗi thiếu bảng buyers trong file types
-  await (adminSupabase as any).from('buyers').update({ approval_status: tier } as any).eq('id', buyerId);
-  await adminSupabase.from('profiles').update({ approval_status: tier } as any).eq('buyer_id', buyerId);
+  await (adminSupabase as any).from('buyers').update({ approval_status: tier }).eq('id', buyerId);
+  // ✅ Bọc as any để bỏ qua lỗi thiếu cột buyer_id trong types của profiles
+  await (adminSupabase as any).from('profiles').update({ approval_status: tier }).eq('buyer_id', buyerId);
   
   revalidatePath('/settings/buyers');
   revalidatePath('/settings/users');
@@ -245,7 +245,8 @@ export async function updateSupplierEntity(formData: FormData) {
 
   if (error) throw new Error(error.message);
 
-  await adminSupabase.from('profiles').update({ company_name } as any).eq('supplier_id', id);
+  // ✅ Bọc as any để bỏ qua lỗi thiếu cột supplier_id trong types của profiles
+  await (adminSupabase as any).from('profiles').update({ company_name }).eq('supplier_id', id);
 
   revalidatePath('/settings/suppliers');
   revalidatePath(`/settings/suppliers/${id}`);
@@ -288,7 +289,7 @@ export async function addStaffToEntity(formData: FormData) {
 
     const { error: profileError } = await adminSupabase
       .from('profiles')
-      .update(profileData)
+      .update(profileData as any)
       .eq('id', authUser.user.id);
 
     if (profileError) throw new Error(profileError.message);
@@ -331,7 +332,8 @@ export async function updateBuyerEntity(formData: FormData) {
 
   if (error) throw new Error(error.message);
 
-  await adminSupabase.from('profiles').update({ company_name } as any).eq('buyer_id', id);
+  // ✅ Bọc as any để bỏ qua lỗi thiếu cột buyer_id trong types của profiles
+  await (adminSupabase as any).from('profiles').update({ company_name }).eq('buyer_id', id);
 
   revalidatePath('/settings/buyers');
   revalidatePath(`/settings/buyers/${id}`);
