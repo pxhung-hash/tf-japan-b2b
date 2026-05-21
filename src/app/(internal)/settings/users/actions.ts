@@ -4,7 +4,6 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'; // Import dùng cho hàm tạo Supplier
 
 // ============================================================================
 // Kéo quyền Admin cơ bản (Dùng chung cho các hành động bảo mật)
@@ -39,13 +38,13 @@ export async function editUser(formData: FormData) {
     throw new Error("You cannot demote your own admin account.");
   }
 
-  // ✅ ĐÃ SỬA: Bỏ first_name, last_name, cập nhật trực tiếp vào full_name
+  // ✅ Đã bọc as any để chống lỗi Type
   await supabase.from('profiles').update({ 
     full_name: fullName, 
     company_name: companyName, 
     role: role, 
     approval_status: approvalStatus
-  }).eq('id', userId)
+  } as any).eq('id', userId)
 
   revalidatePath('/settings/users')
   revalidatePath('/settings/buyers')
@@ -87,16 +86,14 @@ export async function createStaffAccount(formData: FormData) {
 
   if (authError) throw new Error(authError.message);
 
-  // ✅ ĐÃ SỬA: Bỏ first_name, last_name, cập nhật trực tiếp vào full_name
+  // ✅ ĐÃ SỬA LỖI LẶP CÚ PHÁP VÀ BỌC AS ANY
   await adminSupabase
-    .from('profiles')
-    await adminSupabase
     .from('profiles')
     .update({ 
       full_name: fullName, 
-      role: role as any, 
-      approval_status: 'approved' as any 
-    })
+      role: role, 
+      approval_status: 'approved' 
+    } as any)
     .eq('id', authUser.user.id);
 
   revalidatePath('/settings/staff');
@@ -109,11 +106,8 @@ export async function createStaffAccount(formData: FormData) {
 export async function updateBuyerTier(buyerId: string, tier: string) {
   const adminSupabase = createAdminClient();
   
-  // 1. Cập nhật pháp nhân Buyer
-  await adminSupabase.from('buyers').update({ approval_status: tier }).eq('id', buyerId);
-  
-  // 2. Tự động cập nhật luôn trạng thái các nhân viên thuộc công ty đó
-  await adminSupabase.from('profiles').update({ approval_status: tier }).eq('buyer_id', buyerId);
+  await adminSupabase.from('buyers').update({ approval_status: tier } as any).eq('id', buyerId);
+  await adminSupabase.from('profiles').update({ approval_status: tier } as any).eq('buyer_id', buyerId);
   
   revalidatePath('/settings/buyers');
   revalidatePath('/settings/users');
@@ -125,12 +119,7 @@ export async function updateBuyerTier(buyerId: string, tier: string) {
 export async function createSupplierAccount(formData: FormData) {
   try {
     const { adminUser } = await verifyAdminAccess();
-    
-    // ✅ ĐÃ SỬA: Khởi tạo Admin Client chuẩn xác để xuyên qua RLS
-    const adminSupabase = createSupabaseAdmin(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const adminSupabase = createAdminClient();
     
     const companyName = formData.get('companyName') as string;
     const contactName = formData.get('contactName') as string;
@@ -140,7 +129,13 @@ export async function createSupplierAccount(formData: FormData) {
     // 1. TẠO PHÁP NHÂN SUPPLIER
     const { data: newEntity, error: entityError } = await adminSupabase
       .from('suppliers')
-      .insert([{ company_name: companyName, contact_person: contactName, email: email, approval_status: 'approved', created_by: adminUser.id }])
+      .insert([{ 
+        company_name: companyName, 
+        contact_person: contactName, 
+        email: email, 
+        approval_status: 'approved', 
+        created_by: adminUser.id 
+      } as any])
       .select('id').single();
 
     if (entityError) throw new Error("Lỗi tạo Pháp nhân Supplier: " + entityError.message);
@@ -152,10 +147,12 @@ export async function createSupplierAccount(formData: FormData) {
 
     if (authError) throw new Error("Lỗi tạo Auth User: " + authError.message);
 
-    // ✅ ĐÃ SỬA: Cập nhật trực tiếp full_name
     await adminSupabase.from('profiles').update({ 
-      full_name: contactName, role: 'supplier', approval_status: 'approved', supplier_id: newEntity.id 
-    }).eq('id', authUser.user.id);
+      full_name: contactName, 
+      role: 'supplier', 
+      approval_status: 'approved', 
+      supplier_id: newEntity.id 
+    } as any).eq('id', authUser.user.id);
 
     revalidatePath('/settings/suppliers');
     revalidatePath('/settings/users');
@@ -182,7 +179,11 @@ export async function createBuyerAccount(formData: FormData) {
     // 1. TẠO PHÁP NHÂN BUYER
     const { data: newEntity, error: entityError } = await adminSupabase
       .from('buyers')
-      .insert([{ company_name: companyName, approval_status: 'approved', created_by: adminUser.id }])
+      .insert([{ 
+        company_name: companyName, 
+        approval_status: 'approved', 
+        created_by: adminUser.id 
+      } as any])
       .select('id').single();
 
     if (entityError) throw new Error("Lỗi tạo Pháp nhân Buyer: " + entityError.message);
@@ -194,10 +195,12 @@ export async function createBuyerAccount(formData: FormData) {
 
     if (authError) throw new Error("Lỗi tạo Auth User: " + authError.message);
 
-    // ✅ ĐÃ SỬA: Cập nhật trực tiếp full_name
     const { error: profileError } = await adminSupabase.from('profiles').update({ 
-      full_name: contactName, role: 'buyer', approval_status: 'approved', buyer_id: newEntity.id 
-    }).eq('id', authUser.user.id);
+      full_name: contactName, 
+      role: 'buyer', 
+      approval_status: 'approved', 
+      buyer_id: newEntity.id 
+    } as any).eq('id', authUser.user.id);
 
     if (profileError) throw new Error("Lỗi liên kết hồ sơ: " + profileError.message);
 
@@ -232,13 +235,12 @@ export async function updateSupplierEntity(formData: FormData) {
       business_type: formData.get('business_type') as string,
       bank_account: formData.get('bank_account') as string,
       approval_status: formData.get('approval_status') as string
-    })
+    } as any)
     .eq('id', id);
 
   if (error) throw new Error(error.message);
 
-  // Cập nhật luôn tên công ty bên bảng profiles cho đồng bộ
-  await adminSupabase.from('profiles').update({ company_name }).eq('supplier_id', id);
+  await adminSupabase.from('profiles').update({ company_name } as any).eq('supplier_id', id);
 
   revalidatePath('/settings/suppliers');
   revalidatePath(`/settings/suppliers/${id}`);
@@ -247,7 +249,7 @@ export async function updateSupplierEntity(formData: FormData) {
 }
 
 // ============================================================================
-// 8. THÊM TÀI KHOẢN NHÂN VIÊN VÀO MỘT PHÁP NHÂN ĐÃ TỒN TẠI (KHÔNG ĐÁNH SẬP TRANG)
+// 8. THÊM TÀI KHOẢN NHÂN VIÊN VÀO MỘT PHÁP NHÂN ĐÃ TỒN TẠI
 // ============================================================================
 export async function addStaffToEntity(formData: FormData) {
   const adminSupabase = createAdminClient();
@@ -266,7 +268,6 @@ export async function addStaffToEntity(formData: FormData) {
 
     if (authError) throw new Error(authError.message);
 
-    // ✅ ĐÃ SỬA: Cập nhật trực tiếp full_name
     const profileData: any = {
       full_name: fullName,
       company_name: companyName,
@@ -288,7 +289,6 @@ export async function addStaffToEntity(formData: FormData) {
     if (profileError) throw new Error(profileError.message);
 
     revalidatePath(`/settings/${entityType}s/${entityId}`);
-
     return { success: true };
 
   } catch (error: any) {
@@ -320,13 +320,12 @@ export async function updateBuyerEntity(formData: FormData) {
       website: formData.get('website') as string,
       tax_id: formData.get('tax_id') as string,
       approval_status: formData.get('approval_status') as string
-    })
+    } as any)
     .eq('id', id);
 
   if (error) throw new Error(error.message);
 
-  // Cập nhật luôn tên công ty bên bảng profiles cho đồng bộ
-  await adminSupabase.from('profiles').update({ company_name }).eq('buyer_id', id);
+  await adminSupabase.from('profiles').update({ company_name } as any).eq('buyer_id', id);
 
   revalidatePath('/settings/buyers');
   revalidatePath(`/settings/buyers/${id}`);
